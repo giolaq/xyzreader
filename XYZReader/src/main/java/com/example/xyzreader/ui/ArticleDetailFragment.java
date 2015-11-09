@@ -11,8 +11,11 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ShareCompat;
+import android.support.v7.app.ActionBarActivity;
 import android.support.v7.graphics.Palette;
+import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
@@ -54,6 +57,7 @@ public class ArticleDetailFragment extends Fragment implements
     private int mScrollY;
     private boolean mIsCard = false;
     private int mStatusBarFullOpacityBottom;
+    private FloatingActionButton btn;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -103,43 +107,28 @@ public class ArticleDetailFragment extends Fragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
-        mDrawInsetsFrameLayout = (DrawInsetsFrameLayout)
-                mRootView.findViewById(R.id.draw_insets_frame_layout);
-        mDrawInsetsFrameLayout.setOnInsetsCallback(new DrawInsetsFrameLayout.OnInsetsCallback() {
-            @Override
-            public void onInsetsChanged(Rect insets) {
-                mTopInset = insets.top;
-            }
-        });
 
-        mScrollView = (ObservableScrollView) mRootView.findViewById(R.id.scrollview);
-        mScrollView.setCallbacks(new ObservableScrollView.Callbacks() {
-            @Override
-            public void onScrollChanged() {
-                mScrollY = mScrollView.getScrollY();
-                getActivityCast().onUpButtonFloorChanged(mItemId, ArticleDetailFragment.this);
-                mPhotoContainerView.setTranslationY((int) (mScrollY - mScrollY / PARALLAX_FACTOR));
-                updateStatusBar();
-            }
-        });
-
-        mPhotoView = (ImageView) mRootView.findViewById(R.id.photo);
-        mPhotoContainerView = mRootView.findViewById(R.id.photo_container);
-
+        ActionBarActivity activity =(ActionBarActivity) getActivity();
         mStatusBarColorDrawable = new ColorDrawable(0);
-
-        mRootView.findViewById(R.id.share_fab).setOnClickListener(new View.OnClickListener() {
+        Toolbar t = (Toolbar)mRootView.findViewById(R.id.toolbar1);
+        activity.setSupportActionBar(t);
+        View mCustomView = inflater.inflate(R.layout.actionbar_custom, null);
+        mCustomView.findViewById(R.id.imageView1).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(getActivity())
-                        .setType("text/plain")
-                        .setText("Some sample text")
-                        .getIntent(), getString(R.string.action_share)));
+            public void onClick(View v) {
+
+                getActivity().onBackPressed();
             }
         });
+        activity.getSupportActionBar().setCustomView(mCustomView);
+        activity.getSupportActionBar().setDisplayShowTitleEnabled(false);
+        activity.getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back);
+        activity.getSupportActionBar().setDisplayShowCustomEnabled(true);
+
+
 
         bindViews();
-        updateStatusBar();
+        btn = (FloatingActionButton) mRootView.findViewById(R.id.share_fab);
         return mRootView;
     }
 
@@ -154,7 +143,7 @@ public class ArticleDetailFragment extends Fragment implements
                     (int) (Color.green(mMutedColor) * 0.9),
                     (int) (Color.blue(mMutedColor) * 0.9));
         }
-        mStatusBarColorDrawable.setColor(color);
+        mStatusBarColorDrawable.setColor(color);//
         mDrawInsetsFrameLayout.setInsetBackground(mStatusBarColorDrawable);
     }
 
@@ -206,9 +195,9 @@ public class ArticleDetailFragment extends Fragment implements
                                 Palette p = Palette.generate(bitmap, 12);
                                 mMutedColor = p.getDarkMutedColor(0xFF333333);
                                 mPhotoView.setImageBitmap(imageContainer.getBitmap());
-                                mRootView.findViewById(R.id.meta_bar)
-                                        .setBackgroundColor(mMutedColor);
-                                updateStatusBar();
+                                //mRootView.findViewById(R.id.meta_bar)
+                                //        .setBackgroundColor(mMutedColor);
+                                //updateStatusBar();
                             }
                         }
 
