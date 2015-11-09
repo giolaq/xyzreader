@@ -28,6 +28,7 @@ import android.widget.TextView;
 
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
+import com.bumptech.glide.Glide;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 
@@ -168,6 +169,7 @@ public class ArticleDetailFragment extends Fragment implements
 
         TextView titleView = (TextView) mRootView.findViewById(R.id.article_title);
         TextView bylineView = (TextView) mRootView.findViewById(R.id.article_byline);
+        ImageView mPhotoView = (ImageView) mRootView.findViewById(R.id.image);
         bylineView.setMovementMethod(new LinkMovementMethod());
         TextView bodyView = (TextView) mRootView.findViewById(R.id.article_body);
         bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
@@ -186,26 +188,32 @@ public class ArticleDetailFragment extends Fragment implements
                             + mCursor.getString(ArticleLoader.Query.AUTHOR)
                             + "</font>"));
             bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY)));
-            ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
-                    .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
-                        @Override
-                        public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
-                            Bitmap bitmap = imageContainer.getBitmap();
-                            if (bitmap != null) {
-                                Palette p = Palette.generate(bitmap, 12);
-                                mMutedColor = p.getDarkMutedColor(0xFF333333);
-                                mPhotoView.setImageBitmap(imageContainer.getBitmap());
-                                //mRootView.findViewById(R.id.meta_bar)
-                                //        .setBackgroundColor(mMutedColor);
-                                //updateStatusBar();
-                            }
-                        }
+            Log.d(TAG, "bindViews: " +mCursor.getString(ArticleLoader.Query.PHOTO_URL) );
+            Glide.with(getActivity())
+                    .load(mCursor.getString(ArticleLoader.Query.PHOTO_URL))
+                    .centerCrop()
+                    .into(mPhotoView);
 
-                        @Override
-                        public void onErrorResponse(VolleyError volleyError) {
-
-                        }
-                    });
+//            ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
+//                    .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
+//                        @Override
+//                        public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
+//                            Bitmap bitmap = imageContainer.getBitmap();
+//                            if (bitmap != null) {
+//                                Palette p = Palette.generate(bitmap, 12);
+//                                mMutedColor = p.getDarkMutedColor(0xFF333333);
+//                                mPhotoView.setImageBitmap(imageContainer.getBitmap());
+//                                //mRootView.findViewById(R.id.meta_bar)
+//                                //        .setBackgroundColor(mMutedColor);
+//                                //updateStatusBar();
+//                            }
+//                        }
+//
+//                        @Override
+//                        public void onErrorResponse(VolleyError volleyError) {
+//
+//                        }
+//                    });
         } else {
             mRootView.setVisibility(View.GONE);
             titleView.setText("N/A");
