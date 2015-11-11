@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ShareCompat;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
@@ -109,24 +110,23 @@ public class ArticleDetailFragment extends Fragment implements
             Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
 
-        ActionBarActivity activity =(ActionBarActivity) getActivity();
+        AppCompatActivity activity =(AppCompatActivity) getActivity();
         mStatusBarColorDrawable = new ColorDrawable(0);
         Toolbar t = (Toolbar)mRootView.findViewById(R.id.toolbar1);
         activity.setSupportActionBar(t);
-        View mCustomView = inflater.inflate(R.layout.actionbar_custom, null);
-        mCustomView.findViewById(R.id.imageView1).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                getActivity().onBackPressed();
-            }
-        });
-        activity.getSupportActionBar().setCustomView(mCustomView);
+//        View mCustomView = inflater.inflate(R.layout.actionbar_custom, null);
+//        mCustomView.findViewById(R.id.imageView1).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//                getActivity().onBackPressed();
+//            }
+//        });
+   //     activity.getSupportActionBar().setCustomView(R.id.toolbar);
         activity.getSupportActionBar().setDisplayShowTitleEnabled(false);
-        activity.getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back);
+ //       activity.getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back);
         activity.getSupportActionBar().setDisplayShowCustomEnabled(true);
-
-
+        activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         bindViews();
         btn = (FloatingActionButton) mRootView.findViewById(R.id.share_fab);
