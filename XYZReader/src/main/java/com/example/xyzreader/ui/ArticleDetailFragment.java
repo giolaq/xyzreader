@@ -2,18 +2,15 @@ package com.example.xyzreader.ui;
 
 import android.app.Fragment;
 import android.app.LoaderManager;
-import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ShareCompat;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
@@ -24,6 +21,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -107,12 +106,12 @@ public class ArticleDetailFragment extends Fragment implements
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
 
-        AppCompatActivity activity =(AppCompatActivity) getActivity();
+        AppCompatActivity activity = (AppCompatActivity) getActivity();
         mStatusBarColorDrawable = new ColorDrawable(0);
-        Toolbar t = (Toolbar)mRootView.findViewById(R.id.toolbar1);
+        Toolbar t = (Toolbar) mRootView.findViewById(R.id.toolbar1);
         activity.setSupportActionBar(t);
 //        View mCustomView = inflater.inflate(R.layout.actionbar_custom, null);
 //        mCustomView.findViewById(R.id.imageView1).setOnClickListener(new View.OnClickListener() {
@@ -122,9 +121,9 @@ public class ArticleDetailFragment extends Fragment implements
 //                getActivity().onBackPressed();
 //            }
 //        });
-   //     activity.getSupportActionBar().setCustomView(R.id.toolbar);
+        //     activity.getSupportActionBar().setCustomView(R.id.toolbar);
         activity.getSupportActionBar().setDisplayShowTitleEnabled(false);
- //       activity.getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back);
+        //       activity.getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back);
         activity.getSupportActionBar().setDisplayShowCustomEnabled(true);
         activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -188,36 +187,43 @@ public class ArticleDetailFragment extends Fragment implements
                             + mCursor.getString(ArticleLoader.Query.AUTHOR)
                             + "</font>"));
             bodyView.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY)));
-            Log.d(TAG, "bindViews: " +mCursor.getString(ArticleLoader.Query.PHOTO_URL) );
+            Log.d(TAG, "bindViews: " + mCursor.getString(ArticleLoader.Query.PHOTO_URL));
             Glide.with(getActivity())
                     .load(mCursor.getString(ArticleLoader.Query.PHOTO_URL))
                     .centerCrop()
                     .into(mPhotoView);
 
-//            ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
-//                    .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
-//                        @Override
-//                        public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
-//                            Bitmap bitmap = imageContainer.getBitmap();
-//                            if (bitmap != null) {
-//                                Palette p = Palette.generate(bitmap, 12);
-//                                mMutedColor = p.getDarkMutedColor(0xFF333333);
-//                                mPhotoView.setImageBitmap(imageContainer.getBitmap());
-//                                //mRootView.findViewById(R.id.meta_bar)
-//                                //        .setBackgroundColor(mMutedColor);
-//                                //updateStatusBar();
-//                            }
-//                        }
-//
-//                        @Override
-//                        public void onErrorResponse(VolleyError volleyError) {
-//
-//                        }
-//                    });
+            ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
+                    .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
+                        @Override
+                        public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
+                            Bitmap bitmap = imageContainer.getBitmap();
+                            if (bitmap != null) {
+                                Palette p = Palette.generate(bitmap, 12);
+                                mMutedColor = p.getDarkMutedColor(0xFF333333);
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                    Window window = getActivity().getWindow();
+
+                                    // clear FLAG_TRANSLUCENT_STATUS flag:
+                                    window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+
+                                    window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+                                    window.setStatusBarColor(mMutedColor);
+                                }
+
+                                //updateStatusBar();
+                            }
+                        }
+
+                        @Override
+                        public void onErrorResponse(VolleyError volleyError) {
+
+                        }
+                    });
         } else {
             mRootView.setVisibility(View.GONE);
             titleView.setText("N/A");
-            bylineView.setText("N/A" );
+            bylineView.setText("N/A");
             bodyView.setText("N/A");
         }
     }
