@@ -167,7 +167,6 @@ public class ArticleDetailFragment extends Fragment implements
             Uri uri = Uri.parse(mCursor.getString(ArticleLoader.Query.PHOTO_URL));
             mPhotoView.setImageURI(uri);
             mPhotoView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
-
 //            ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
 //                    .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
 //                        @Override
