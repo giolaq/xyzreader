@@ -4,12 +4,14 @@ import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.graphics.Palette;
@@ -21,14 +23,20 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
+import com.facebook.common.executors.CallerThreadExecutor;
+import com.facebook.common.references.CloseableReference;
+import com.facebook.datasource.DataSource;
+import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.drawee.interfaces.DraweeController;
 import com.facebook.drawee.view.SimpleDraweeView;
+import com.facebook.imagepipeline.datasource.BaseBitmapDataSubscriber;
+import com.facebook.imagepipeline.image.CloseableImage;
+import com.facebook.imagepipeline.request.ImageRequest;
+import com.facebook.imagepipeline.request.ImageRequestBuilder;
 
 /**
  * A fragment representing a single Article detail screen. This fragment is
@@ -101,9 +109,9 @@ public class ArticleDetailFragment extends Fragment implements
                              Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
 
-        ActionBarActivity activity =(ActionBarActivity) getActivity();
+        ActionBarActivity activity = (ActionBarActivity) getActivity();
         mStatusBarColorDrawable = new ColorDrawable(0);
-        Toolbar t = (Toolbar)mRootView.findViewById(R.id.toolbar1);
+        Toolbar t = (Toolbar) mRootView.findViewById(R.id.toolbar1);
         activity.setSupportActionBar(t);
         View mCustomView = inflater.inflate(R.layout.actionbar_custom, null);
         mCustomView.findViewById(R.id.imageView1).setOnClickListener(new View.OnClickListener() {
@@ -165,8 +173,16 @@ public class ArticleDetailFragment extends Fragment implements
             });
 
             Uri uri = Uri.parse(mCursor.getString(ArticleLoader.Query.PHOTO_URL));
+
+            ImageRequest imageRequest = ImageRequestBuilder.newBuilderWithSource(uri).build();
+            DraweeController controller = Fresco.newDraweeControllerBuilder()
+                    .setImageRequest(imageRequest)
+                    .setOldController(mPhotoView.getController())
+                    .build();
+            processImageWithPaletteApi(imageRequest, controller);
             mPhotoView.setImageURI(uri);
             mPhotoView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
+
 //            ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
 //                    .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
 //                        @Override
@@ -221,6 +237,33 @@ public class ArticleDetailFragment extends Fragment implements
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
         mCursor = null;
         bindViews();
+    }
+
+    private void processImageWithPaletteApi(ImageRequest request, DraweeController controller) {
+
+        DataSource<CloseableReference<CloseableImage>> dataSource =
+                Fresco.getImagePipeline().fetchDecodedImage(request, mPhotoView.getContext());
+        dataSource.subscribe(new BaseBitmapDataSubscriber() {
+            @Override
+            protected void onFailureImpl(DataSource<CloseableReference<CloseableImage>> dataSource) {
+
+            }
+
+            @Override
+            protected void onNewResultImpl(@Nullable Bitmap bitmap) {
+                Palette.from(bitmap).maximumColorCount(24).generate(new Palette.PaletteAsyncListener() {
+                    @Override
+                    public void onGenerated(Palette palette) {
+                        btn.setBackgroundTintList(ColorStateList.valueOf(
+                                palette.getVibrantColor(
+                                        getResources().getColor(R.color.accent)
+                                )));
+                    }
+                });
+            }
+        }, CallerThreadExecutor.getInstance());
+
+        mPhotoView.setController(controller);
     }
 
 }
